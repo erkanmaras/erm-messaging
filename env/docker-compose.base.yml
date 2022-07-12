@@ -1,0 +1,59 @@
+version: '3'
+
+# base docker compose file for environments
+
+services:
+  zookeeper:
+    container_name: ${COMPOSE_PROJECT_NAME}_zookeeper
+    ports:
+      - "${ZOOKEEPER_PORT}:${ZOOKEEPER_PORT}"
+    environment:
+      - ZOO_PORT_NUMBER=${ZOOKEEPER_PORT}
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  
+  kafka:
+    container_name: ${COMPOSE_PROJECT_NAME}_kafka
+    ports:
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
+      - "2${KAFKA_PORT}:2${KAFKA_PORT}"
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_BROKER_ID=1
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:${ZOOKEEPER_PORT}
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=${KAFKA_AUTO_CREATE_TOPICS_ENABLE}
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:2${KAFKA_PORT},EXTERNAL://:${KAFKA_PORT}
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:2${KAFKA_PORT},EXTERNAL://localhost:${KAFKA_PORT}
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+  
+  mysql:
+    container_name: ${COMPOSE_PROJECT_NAME}_mysql
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - "mysql_data:/var/lib/mysql"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_TCP_PORT=${MYSQL_PORT}
+
+  debezium:
+    container_name: ${COMPOSE_PROJECT_NAME}_debezium
+    ports:
+      - "${DEBEZIUM_PORT}:${DEBEZIUM_PORT}"
+    depends_on:
+      - kafka
+      - mysql
+    environment:
+      - GROUP_ID= 1
+      - BOOTSTRAP_SERVERS=kafka:2${KAFKA_PORT}
+      - CONFIG_STORAGE_TOPIC=${COMPOSE_PROJECT_NAME}_connect_configs
+      - OFFSET_STORAGE_TOPIC=${COMPOSE_PROJECT_NAME}_connect_offsets
+      - STATUS_STORAGE_TOPIC=${COMPOSE_PROJECT_NAME}_connect_statuses
+      - CONNECT_LISTENERS=http://0.0.0.0:${DEBEZIUM_PORT}
+volumes:
+  mysql_data:

@@ -1,0 +1,8 @@
+<Project>
+    <PropertyGroup>
+        <Authors>Erkan Maraş</Authors>
+        <Copyright>Erkan Maraş</Copyright>
+        <RepositoryType>git</RepositoryType>
+        <Company>Erm</Company>
+    </PropertyGroup>
+</Project>
