@@ -2,12 +2,13 @@
 
 ### Features
 
-- Serialization Json|Protobuf
-- Message Outbox
-- Saga
-- Kafka Transport
-- MessageGateway (Deduplication & Retry)
-- Typed Message Handler
+- [Incoming/Outgoing Message Pipeline](https://github.com/erkanmaras/erm-messaging/tree/main/src/Messaging/src/Erm.Messaging)
+- [Serialization Json|Protobuf](https://github.com/erkanmaras/erm-messaging/tree/main/src/Messaging/src/Erm.Messaging.Serialization.Protobuf)
+- [Message Outbox](https://github.com/erkanmaras/erm-messaging/tree/main/src/Outbox/src)
+- [Saga](https://github.com/erkanmaras/erm-messaging/tree/main/src/Saga/src)
+- [Kafka Transport](https://github.com/erkanmaras/erm-messaging/tree/main/src/Transports/KafkaTransport/src/Erm.Messaging.KafkaTransport)
+- [MessageGateway (Deduplication & Retry)](https://github.com/erkanmaras/erm-messaging/tree/main/src/MessageGateway/src)
+- [Typed Message Handler](https://github.com/erkanmaras/erm-messaging/tree/main/src/Messaging/src/Erm.Messaging.TypedMessageHandler)
 
 ### To run integration tests
 
