@@ -13,7 +13,10 @@ internal sealed class SagaCoordinator : ISagaCoordinator
     private readonly ISagaInitializer _initializer;
     private readonly ISagaProcessor _processor;
     private readonly ILogger<SagaCoordinator> _logger;
-    private static readonly AsyncKeyedLocker<Guid> Locker = new();
+    private static readonly AsyncKeyedLocker<Guid> Locker = new(o => {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     public SagaCoordinator(ISagaLocator locator,
         ISagaInitializer initializer,
