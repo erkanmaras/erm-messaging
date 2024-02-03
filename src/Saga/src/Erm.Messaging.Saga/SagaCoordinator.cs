@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Erm.Messaging;
+using AsyncKeyedLock;
 
 namespace Erm.Messaging.Saga;
 
@@ -12,7 +13,11 @@ internal sealed class SagaCoordinator : ISagaCoordinator
     private readonly ISagaInitializer _initializer;
     private readonly ISagaProcessor _processor;
     private readonly ILogger<SagaCoordinator> _logger;
-    private static readonly KeyedLocker Locker = new();
+    private static readonly AsyncKeyedLocker<Guid> Locker = new(o =>
+    {
+        o.PoolSize = 20;
+        o.PoolInitialFill = 1;
+    });
 
     public SagaCoordinator(ISagaLocator locator,
         ISagaInitializer initializer,
@@ -58,7 +63,7 @@ internal sealed class SagaCoordinator : ISagaCoordinator
         var sagaId = saga.GetSagaId(context, envelope, action is ISagaStartAction<TMessage>);
         using (_logger.BeginScope("Saga {SagaType}[{SagaId}]", saga.GetType().FullName, sagaId))
         {
-            using (await Locker.Lock(sagaId))
+            using (await Locker.LockAsync(sagaId).ConfigureAwait(false))
             {
                 var (initialized, state) = await _initializer.TryInitialize<TMessage>(saga, sagaId).ConfigureAwait(false);
                 if (!initialized)
